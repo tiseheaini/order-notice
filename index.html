@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Winlinky Orders Notification</title>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <audio id="notice-music">
+        <source = src="357ada2.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        $(document).ready(function(){
+            var socket = io();
+            socket.on('order notice', function(msg){
+                var audio = $("#notice-music");
+                audio[0].currentTime = 0;
+                audio[0].play();
+            });
+        });
+    </script>
+  </body>
+</html>
