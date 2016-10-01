@@ -1,37 +1,157 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Winlinky Orders Notification</title>
-    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="normalize.css" media="all">
-    <style>
-      #header {
-        height: 120px;
-        line-height: 100px;
-        background-image: url(header_blurbg.jpg);
-        color: #fff;
-        font-size: 45px;
-        font-family: "helvetica neue",arial,sans-serif;
-        text-align: center;
-        margin-bottom: 20px;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>微邻订单通知页面</title>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+  <style>
+      .index .container {
+        width: 1170px;
+        overflow: hidden;
+        margin: 0 auto;
+        margin-top: 40px;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        left: 50%;
       }
-    </style>
-  </head>
-  <body>
-    <div id="header">订单提醒</div>
-    <audio id="notice-music">
-        <source = src="357ada2.mp3" type="audio/mp3">
-    </audio>
-    <script>
-        $(document).ready(function(){
-            var socket = io();
-            socket.on('order notice', function(msg){
-                var audio = $("#notice-music");
-                audio[0].currentTime = 0;
-                audio[0].play();
-            });
+
+      .index .container .notice-board {
+        text-align: center;
+        float: left;
+        width: 230px;
+        height: 285px;
+        margin: 0px 25px;
+        color: white;
+      }
+
+      .index .container .board-title {
+        width: 100%;
+        height: 132px;
+        line-height: 132px;
+        font-size: 35px;
+      }
+
+      .index .container .board-content {
+        font-size: 95px;
+      }
+
+      .index .order-untreated { background-color: #22A12A; }
+
+      .index .order-new { background-color: #DD0010; }
+
+      .index .order-completed { background-color: #118DE3; }
+
+      .index .teacher-untreated { background-color: #F5A641; }
+
+      .index .resume-count    { background-color: #00C0EF; }
+      .index .organ-count     { background-color: #DD4B39; }
+      .index .organ-order     { background-color: #00A65A; }
+      .index .website-article { background-color: #D88B10; }
+      .index .college-article { background-color: #D2D6DE; }
+  </style>
+</head>
+<body>
+  <div class="index">
+    <div class="container">
+      <div class="notice-board order-untreated">
+        <div class="board-title">未处理订单</div>
+        <div class="board-content">10</div>
+      </div>
+      <div class="notice-board order-new">
+        <div class="board-title">新添加订单</div>
+        <div class="board-content">9</div>
+      </div>
+      <div class="notice-board order-completed">
+        <div class="board-title">已完成套课</div>
+        <div class="board-content">20</div>
+      </div>
+      <div class="notice-board teacher-untreated">
+        <div class="board-title">未处理教师</div>
+        <div class="board-content">110</div>
+      </div>
+    </div>
+
+    <div class="resource-file">
+      <audio id="notice-new">
+          <source = src="text2audio-new.mp3" type="audio/mp3">
+      </audio>
+      <audio id="notice-completed">
+          <source = src="text2audio-completed.mp3" type="audio/mp3">
+      </audio>
+      <audio id="notice-music">
+          <source = src="text2audio-teacher.mp3" type="audio/mp3">
+      </audio>
+    </div>
+  </div>
+
+  <script>
+    function updateOrderData(){
+        console.log('updateOrderData();' + new Date());
+        $.ajax({
+          type: 'get',
+          url: 'http://weilinky.linkerlab.net/api/notice-order-status',
+          dataType:'jsonp',
+          jsonp: 'callback',
+          jsonpCallback: 'updateOrderCallback'
         });
-    </script>
-  </body>
+
+        $.ajax({
+          type: 'get',
+          url: 'http://www.weilinky.com/api/notice_website_status',
+          dataType:'jsonp',
+          jsonp: 'callback',
+          jsonpCallback: 'updateWebsiteCallback'
+        });
+    }
+    function updateOrderCallback(data){
+        $(".order-untreated .board-content").text(data['order-untreated']);
+        $(".order-new .board-content").text(data['order-new']);
+        $(".order-completed .board-content").text(data['order-completed']);
+        $(".teacher-untreated .board-content").text(data['teacher-untreated']);
+    }
+
+    function updateWebsiteCallback(data){
+        $(".resume-count .board-content").text(data['resume-count']);
+        $(".organ-count .board-content").text(data['organ-count']);
+        $(".organ-order .board-content").text(data['organ-order']);
+        $(".website-article .board-content").text(data['website-article']);
+        $(".college-article .board-content").text(data['college-article']);
+    }
+
+    var socket = io();
+    socket.on('orderChannel', function(message){
+      updateOrderData();
+      switch (message) {
+        case "order-untreated":
+          console.log("order-untreated");
+          break;
+        case "order-new":
+          var audio = $("#notice-new");
+          audio[0].currentTime = 0;
+          audio[0].play();
+          break;
+        case "order-completed":
+          var audio = $("#notice-completed");
+          audio[0].currentTime = 0;
+          audio[0].play();
+          break;
+        case "teacher-untreated":
+          var audio = $("#notice-music");
+          audio[0].currentTime = 0;
+          audio[0].play();
+          break;
+        default:
+          console.log("default");
+      }
+    });
+
+    $(function(){
+      updateOrderData();
+    });
+  </script>
+</body>
 </html>
